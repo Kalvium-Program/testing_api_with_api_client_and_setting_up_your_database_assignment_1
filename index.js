@@ -31,21 +31,36 @@
 // Purpose:
 // Help teachers retrieve and analyze student performance efficiently.
 
-
 const express = require('express');
-const { resolve } = require('path');
 
 const app = express();
-const port = 3010;
+app.use(express.json());
+const PORT = 3000;
+const studentData = require('./data.json');
 
-app.use(express.static('static'));
+app.post('/students/above-threshold', (req, res) => {
+  console.log('Received request:', req.body);
+  const { threshold } = req.body;
+  // console.log('Received threshold:', threshold);
 
-app.get('/', (req, res) => {
-  res.sendFile(resolve(__dirname, 'pages/index.html'));
+  if (threshold === undefined || typeof threshold !== 'number') {
+    console.error('Invalid threshold:', threshold);
+    return res.status(400).json({ error: 'threshold must be a number' });
+  }
+
+  const filteredStudents = studentData
+    .filter((student) => student.total > threshold)
+    // .map((student) => ({ name: student.name, total: student.total }));
+
+  // console.log('Filtered students:', filteredStudents);
+
+  res.send({
+    count: filteredStudents.length,
+    students: filteredStudents,
+  });
+
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
-
-
